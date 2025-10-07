@@ -4,11 +4,11 @@ from pydub import AudioSegment
 from moviepy.editor import VideoFileClip
 import tempfile
 import os
+import shutil
 
 # ---------- Streamlit Page Setup ----------
 st.set_page_config(page_title="🎙️ Audio/Video to Text", layout="centered")
-st.title("🎙️ Audio/Video to Text (Telugu / Hindi / English)")
-st.caption("Automatically detects language using Google Speech Recognition API")
+st.title("🎙️ Audio/Video to Text")
 
 uploaded_file = st.file_uploader(
     "Upload audio/video file",
@@ -23,11 +23,13 @@ if uploaded_file:
         st.audio(uploaded_file)
 
     # Save uploaded file to temporary location
-    with tempfile.NamedTemporaryFile(delete=False, suffix=os.path.splitext(uploaded_file.name)[1]) as tmp:
-        tmp.write(uploaded_file.read())
-        temp_path = tmp.name
-
+    temp_path = None
+    audio_path = None
     try:
+        with tempfile.NamedTemporaryFile(delete=False, suffix=os.path.splitext(uploaded_file.name)[1]) as tmp:
+            tmp.write(uploaded_file.read())
+            temp_path = tmp.name
+
         # Extract or convert audio to WAV
         if uploaded_file.type.startswith("video"):
             st.info("🎬 Extracting audio from video...")
@@ -47,7 +49,7 @@ if uploaded_file:
             audio = audio.set_frame_rate(16000).set_channels(1)
             audio_path = temp_path.replace(os.path.splitext(temp_path)[1], "_converted.wav")
             audio.export(audio_path, format="wav")
-            # audio.close()  <-- remove this line
+            audio = None  # Release audio
 
         # Initialize recognizer
         recognizer = sr.Recognizer()
@@ -84,8 +86,8 @@ if uploaded_file:
     except Exception as e:
         st.error(f"❌ Error: {e}")
     finally:
-        # Cleanup temporary files
-        if os.path.exists(temp_path):
+        # Cleanup temporary files safely
+        if temp_path and os.path.exists(temp_path):
             os.remove(temp_path)
-        if os.path.exists(audio_path):
+        if audio_path and os.path.exists(audio_path):
             os.remove(audio_path)
