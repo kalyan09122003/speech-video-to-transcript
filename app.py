@@ -8,7 +8,7 @@ import shutil
 
 # ---------- Streamlit Page Setup ----------
 st.set_page_config(page_title="🎙️ Audio/Video to Text", layout="centered")
-st.title("🎙️ Audio/Video to Text")
+st.title("🎙️ Audio/Video to transcript")
 
 uploaded_file = st.file_uploader(
     "Upload audio/video file",
@@ -91,3 +91,4 @@ if uploaded_file:
             os.remove(temp_path)
         if audio_path and os.path.exists(audio_path):
             os.remove(audio_path)
+
